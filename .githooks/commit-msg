@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# This script checks if the commit message follows a specific format.
+
+commit_message_file=$1
+commit_message=$(cat "$commit_message_file")
+
+if echo "$commit_message" | grep -qiE "(Closes|Fixes|Ref) #[0-9]+"; then
+    exit 0
+fi
+
+echo "Error: Commit message must refer to an issue"
+echo "Your commit message: "$commit_message""
+echo "You need to include one of the following patterns in your commit message:"
+echo "  Closes #<issue_number>"
+echo "  Fixes #<issue_number>"
+echo "  Ref #<issue_number>"
+exit 1
