@@ -16,6 +16,10 @@ import java.nio.charset.StandardCharsets;
  */
 public class Server {
 
+    /** Private constructor to prevent instantiation. */
+    private Server() {
+    }
+
     /**
      * Starts the HTTP server on the given port and registers the webhook handler.
      *

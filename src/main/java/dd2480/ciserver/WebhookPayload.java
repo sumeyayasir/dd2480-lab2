@@ -6,14 +6,17 @@ import org.json.JSONObject;
  * Parses a GitHub push event webhook payload, extracting the repository URL,
  * branch name, and commit SHA which we need for triggering CI builds.
  *
- * Expected JSON structure:
+ * <p>Expected JSON structure (subset):</p>
+ * <pre>{@code
  * {
  *   "ref": "refs/heads/main",
  *   "after": "heylol123",
  *   "repository": {
- *     "clone_url": "https://github.com/owner/repo.git"
+ *     "clone_url": "https://github.com/owner/repo.git",
+ *     "full_name": "owner/repo"
  *   }
  * }
+ * }</pre>
  */
 public class WebhookPayload {
 
