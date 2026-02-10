@@ -16,6 +16,7 @@ public class CIResultObjectTest {
         assertFalse(mockResult.isBuildSuccessful());
         assertFalse(mockResult.isTestsSuccessful());
         assertNull(mockResult.getErrorMessage());
+        assertEquals("", mockResult.getBuildLog());
     }
 
     /**
@@ -28,6 +29,28 @@ public class CIResultObjectTest {
         mockResult.setBuildSuccessful(true);
         mockResult.setTestsSuccessful(true);
         assertTrue(mockResult.isCIResultSuccessful());
+    }
+
+    /**
+     * Unit test to verify that appendBuildLog concatenates log entries.
+     */
+    @Test
+    public void testAppendBuildLog() {
+        CIResultObject result = new CIResultObject("sha", "main");
+        result.appendBuildLog("compile output");
+        result.appendBuildLog("test output");
+        assertEquals("compile output\ntest output", result.getBuildLog());
+    }
+
+    /**
+     * Unit test to verify that setBuildLog replaces the existing log.
+     */
+    @Test
+    public void testSetBuildLogOverwrites() {
+        CIResultObject result = new CIResultObject("sha", "main");
+        result.appendBuildLog("old");
+        result.setBuildLog("new");
+        assertEquals("new", result.getBuildLog());
     }
 
 }

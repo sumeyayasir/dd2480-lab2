@@ -22,15 +22,16 @@ public class BuildProcessorTest {
     static class TestBuildProcessor extends BuildProcessor {
         private int cloneExitCode = 0;
         private int compileExitCode = 0;
+        private int testExitCode = 0;
 
-        TestBuildProcessor(int cloneExitCode, int compileExitCode) {
+        TestBuildProcessor(int cloneExitCode, int compileExitCode, int testExitCode) {
             this.cloneExitCode = cloneExitCode;
             this.compileExitCode = compileExitCode;
+            this.testExitCode = testExitCode;
         }
 
         @Override
         int runProcess(File workDir, String... command) {
-            // Simulate git clone result
             return cloneExitCode;
         }
 
@@ -52,9 +53,22 @@ public class BuildProcessorTest {
             // Simulate compile
             if (compileExitCode == 0) {
                 result.setBuildSuccessful(true);
+                result.appendBuildLog("mock compile output");
             } else {
                 result.setBuildSuccessful(false);
                 result.setErrorMessage("Compilation failed:\nmock output");
+                result.appendBuildLog("mock compile error output");
+                return result;
+            }
+
+            // Simulate test
+            if (testExitCode == 0) {
+                result.setTestsSuccessful(true);
+                result.appendBuildLog("mock test output");
+            } else {
+                result.setTestsSuccessful(false);
+                result.setErrorMessage("Tests failed:\nmock test output");
+                result.appendBuildLog("mock test error output");
             }
 
             return result;
@@ -66,10 +80,12 @@ public class BuildProcessorTest {
      */
     @Test
     public void testSuccessfulBuildReturnsTrueResult() {
-        BuildProcessor bp = new TestBuildProcessor(0, 0);
+        BuildProcessor bp = new TestBuildProcessor(0, 0, 0);
         CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heylol123");
 
         assertTrue(result.isBuildSuccessful());
+        assertTrue(result.isTestsSuccessful());
+        assertTrue(result.isCIResultSuccessful());
         assertEquals("heylol123", result.getCommitSHA());
         assertEquals("main", result.getBranchName());
         assertNull(result.getErrorMessage());
@@ -80,10 +96,12 @@ public class BuildProcessorTest {
      */
     @Test
     public void testCloneFailureReturnsFalseResult() {
-        BuildProcessor bp = new TestBuildProcessor(128, 0);
+        BuildProcessor bp = new TestBuildProcessor(128, 0, 0);
         CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heylol123");
 
         assertFalse(result.isBuildSuccessful());
+        assertFalse(result.isTestsSuccessful());
+        assertFalse(result.isCIResultSuccessful());
         assertNotNull(result.getErrorMessage());
         assertTrue(result.getErrorMessage().contains("clone failed"));
     }
@@ -93,10 +111,12 @@ public class BuildProcessorTest {
      */
     @Test
     public void testCompileFailureReturnsFalseResult() {
-        BuildProcessor bp = new TestBuildProcessor(0, 1);
+        BuildProcessor bp = new TestBuildProcessor(0, 1, 0);
         CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heylol123");
 
         assertFalse(result.isBuildSuccessful());
+        assertFalse(result.isTestsSuccessful());
+        assertFalse(result.isCIResultSuccessful());
         assertNotNull(result.getErrorMessage());
         assertTrue(result.getErrorMessage().contains("Compilation failed"));
     }
@@ -106,11 +126,63 @@ public class BuildProcessorTest {
      */
     @Test
     public void testResultContainsCorrectMetadata() {
-        BuildProcessor bp = new TestBuildProcessor(0, 0);
+        BuildProcessor bp = new TestBuildProcessor(0, 0, 0);
         CIResultObject result = bp.runBuild("https://example.com/repo.git", "feature/test", "heyyay123");
 
         assertEquals("heyyay123", result.getCommitSHA());
         assertEquals("feature/test", result.getBranchName());
+    }
+
+    /**
+     * Verifies that a test failure produces a failed test result but a successful build.
+     */
+    @Test
+    public void testTestFailureReturnsFalseTestResult() {
+        BuildProcessor bp = new TestBuildProcessor(0, 0, 1);
+        CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heytest123");
+
+        assertTrue(result.isBuildSuccessful());
+        assertFalse(result.isTestsSuccessful());
+        assertFalse(result.isCIResultSuccessful());
+        assertNotNull(result.getErrorMessage());
+        assertTrue(result.getErrorMessage().contains("Tests failed"));
+    }
+
+    /**
+     * Verifies that a successful build and test run produces a fully successful CI result.
+     */
+    @Test
+    public void testFullCISuccessReturnsTrueForAll() {
+        BuildProcessor bp = new TestBuildProcessor(0, 0, 0);
+        CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heyci123");
+
+        assertTrue(result.isBuildSuccessful());
+        assertTrue(result.isTestsSuccessful());
+        assertTrue(result.isCIResultSuccessful());
+    }
+
+    /**
+     * Verifies that compile failure skips test execution (tests remain false).
+     */
+    @Test
+    public void testCompileFailureSkipsTests() {
+        BuildProcessor bp = new TestBuildProcessor(0, 1, 0);
+        CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heytest123");
+
+        assertFalse(result.isBuildSuccessful());
+        assertFalse(result.isTestsSuccessful());
+    }
+
+    /**
+     * Verifies that build log is populated on a successful run.
+     */
+    @Test
+    public void testBuildLogIsPopulated() {
+        BuildProcessor bp = new TestBuildProcessor(0, 0, 0);
+        CIResultObject result = bp.runBuild("https://example.com/repo.git", "main", "heybuild123");
+
+        assertNotNull(result.getBuildLog());
+        assertFalse(result.getBuildLog().isEmpty());
     }
 
     /**

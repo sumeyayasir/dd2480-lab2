@@ -50,6 +50,8 @@ public class BuildProcessor {
             String output = captureOutput(compileProcess);
             int compileExit = compileProcess.waitFor();
 
+            result.appendBuildLog(output);
+
             if (compileExit == 0) {
                 result.setBuildSuccessful(true);
                 System.out.println("Build successful!");
@@ -57,6 +59,27 @@ public class BuildProcessor {
                 result.setBuildSuccessful(false);
                 result.setErrorMessage("Compilation failed:\n" + output);
                 System.out.println("Build failed with exit code: " + compileExit);
+                return result;
+            }
+
+            // Run mvn test
+            ProcessBuilder testPb = new ProcessBuilder("mvn", "test");
+            testPb.directory(repoDir);
+            testPb.redirectErrorStream(true);
+            Process testProcess = testPb.start();
+
+            String testOutput = captureOutput(testProcess);
+            int testExit = testProcess.waitFor();
+
+            result.appendBuildLog(testOutput);
+
+            if (testExit == 0) {
+                result.setTestsSuccessful(true);
+                System.out.println("Tests passed!");
+            } else {
+                result.setTestsSuccessful(false);
+                result.setErrorMessage("Tests failed:\n" + testOutput);
+                System.out.println("Tests failed with exit code: " + testExit);
             }
 
         } catch (Exception e) {
