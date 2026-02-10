@@ -20,6 +20,7 @@ public class WebhookPayload {
     private final String cloneUrl;
     private final String branch;
     private final String commitSHA;
+    private final String repoFullName;
 
     /**
      * Constructs a WebhookPayload by parsing a raw JSON string from a GitHub
@@ -32,7 +33,9 @@ public class WebhookPayload {
     public WebhookPayload(String jsonBody) {
         JSONObject json = new JSONObject(jsonBody);
 
-        this.cloneUrl = json.getJSONObject("repository").getString("clone_url");
+        JSONObject repo = json.getJSONObject("repository");
+        this.cloneUrl = repo.getString("clone_url");
+        this.repoFullName = repo.getString("full_name");
         this.branch = parseBranchFromRef(json.getString("ref"));
         this.commitSHA = json.getString("after");
     }
@@ -77,5 +80,14 @@ public class WebhookPayload {
      */
     public String getCommitSHA() {
         return commitSHA;
+    }
+
+    /**
+     * Returns the full name of the repository (owner/repo).
+     *
+     * @return the full repository name (e.g. {@code "owner/repo"}).
+     */
+    public String getRepoFullName() {
+        return repoFullName;
     }
 }

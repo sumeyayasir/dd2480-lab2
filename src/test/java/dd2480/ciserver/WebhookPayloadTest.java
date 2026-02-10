@@ -16,7 +16,8 @@ public class WebhookPayloadTest {
               "ref": "refs/heads/main",
               "after": "heylol123",
               "repository": {
-                "clone_url": "https://github.com/owner/repo.git"
+                "clone_url": "https://github.com/owner/repo.git",
+                "full_name": "owner/repo"
               }
             }
             """;
@@ -58,12 +59,22 @@ public class WebhookPayloadTest {
                   "ref": "refs/heads/feature/my-branch",
                   "after": "lol123",
                   "repository": {
-                    "clone_url": "https://github.com/owner/repo.git"
+                    "clone_url": "https://github.com/owner/repo.git",
+                    "full_name": "owner/repo"
                   }
                 }
                 """;
         WebhookPayload wp = new WebhookPayload(payload);
         assertEquals("feature/my-branch", wp.getBranch());
+    }
+
+    /**
+     * Verifies that the repo full name is correctly extracted from the payload.
+     */
+    @Test
+    public void testExtractsRepoFullName() {
+        WebhookPayload payload = new WebhookPayload(VALID_PAYLOAD);
+        assertEquals("owner/repo", payload.getRepoFullName());
     }
 
     /**
