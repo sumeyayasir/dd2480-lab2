@@ -78,7 +78,12 @@ public class Server {
         // 2. Start the build in a background thread
         BuildProcessor buildProcessor = new BuildProcessor();
         new Thread(() -> {
-            buildProcessor.runBuild(payload.getCloneUrl(), payload.getBranch());
+            var result = buildProcessor.runBuild(
+                    payload.getCloneUrl(), payload.getBranch(), payload.getCommitSHA());
+            System.out.println("Build finished — success: " + result.isBuildSuccessful());
+            if (result.getErrorMessage() != null) {
+                System.err.println("Error: " + result.getErrorMessage());
+            }
         }).start();
 
         // 3. Send acknowledgement back to GitHub

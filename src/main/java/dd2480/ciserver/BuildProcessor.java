@@ -1,43 +1,104 @@
 package dd2480.ciserver;
-import java.io.File;//
+
+import dd2480.ciserver.model.CIResultObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Path;// 
+import java.nio.file.Path;
+import java.util.stream.Collectors;
 
-public class BuildProcessor 
-{
-    //Create temporary directory for cloning the repository
-    //Get the repository URL and branch name from the webhook payload
-    //runs mvn compile
-    public void runBuild(String repoUrl, String branch)
-    {
+/**
+ * Handles the CI build pipeline: clones a repository, compiles it, and
+ * returns a {@link CIResultObject} containing the results.
+ */
+public class BuildProcessor {
+
+    /**
+     * Clones the repository at the given URL and branch into a temporary
+     * directory, then runs {@code mvn compile} to check compilation.
+     *
+     * @param repoUrl   the HTTPS clone URL of the repository.
+     * @param branch    the branch to check out.
+     * @param commitSHA the SHA of the commit being built.
+     * @return a {@link CIResultObject} populated with the build outcome.
+     */
+    public CIResultObject runBuild(String repoUrl, String branch, String commitSHA) {
+        CIResultObject result = new CIResultObject(commitSHA, branch);
+
         try {
-        // Create a temporary directory for cloning the repository
-        Path tempDir = Files.createTempDirectory("ci-build-");
-        File repoDir = tempDir.toFile();
-        System.out.println("Building in: " + repoDir.getAbsolutePath());
+            // Create a temporary directory for cloning the repository
+            Path tempDir = Files.createTempDirectory("ci-build-");
+            File repoDir = tempDir.toFile();
+            System.out.println("Building in: " + repoDir.getAbsolutePath());
 
-        // Clone the repository using JGit
-        ProcessBuilder clonePb = new ProcessBuilder("git", "clone", "-b", branch, repoUrl, ".");
-            clonePb.directory(repoDir);
-            clonePb.start().waitFor();
+            // Clone the repository
+            int cloneExit = runProcess(repoDir, "git", "clone", "-b", branch, repoUrl, ".");
+            if (cloneExit != 0) {
+                result.setBuildSuccessful(false);
+                result.setErrorMessage("Git clone failed with exit code: " + cloneExit);
+                return result;
+            }
 
-        // Run mvn compile in the cloned repository
-        ProcessBuilder processBuilder = new ProcessBuilder("mvn", "compile");
-        processBuilder.directory(repoDir);
-        Process process = processBuilder.start();
-        int exitCode = process.waitFor();
+            // Run mvn compile
+            ProcessBuilder compilePb = new ProcessBuilder("mvn", "compile");
+            compilePb.directory(repoDir);
+            compilePb.redirectErrorStream(true);
+            Process compileProcess = compilePb.start();
 
-        if (exitCode == 0) {
-            System.out.println("Build successful!");
-        } else {
-            System.out.println("Build failed with exit code: " + exitCode);
+            String output = captureOutput(compileProcess);
+            int compileExit = compileProcess.waitFor();
+
+            if (compileExit == 0) {
+                result.setBuildSuccessful(true);
+                System.out.println("Build successful!");
+            } else {
+                result.setBuildSuccessful(false);
+                result.setErrorMessage("Compilation failed:\n" + output);
+                System.out.println("Build failed with exit code: " + compileExit);
+            }
+
+        } catch (Exception e) {
+            result.setBuildSuccessful(false);
+            result.setErrorMessage("Build exception: " + e.getMessage());
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return result;
     }
 
-
+    /**
+     * Runs a process with the given command in the specified directory and
+     * returns the exit code.
+     *
+     * @param workDir the working directory for the process.
+     * @param command the command and arguments to execute.
+     * @return the process exit code.
+     * @throws Exception if the process cannot be started or is interrupted.
+     */
+    int runProcess(File workDir, String... command) throws Exception {
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(workDir);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        // Drain output to prevent blocking
+        captureOutput(process);
+        return process.waitFor();
     }
-    
+
+    /**
+     * Reads and returns all output (stdout + stderr) from a running process.
+     *
+     * @param process the process to read from.
+     * @return the combined output as a string.
+     */
+    static String captureOutput(Process process) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            return "Failed to capture output: " + e.getMessage();
+        }
+    }
 }
