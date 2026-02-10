@@ -12,6 +12,7 @@ public class CIResultObject {
     private boolean buildSuccessful;
     private boolean testsSuccessful;
     private String errorMessage;
+    private String buildLog;
 
     /**
      * Constructor for initializing the parameters of the result object.
@@ -27,6 +28,7 @@ public class CIResultObject {
         this.buildSuccessful = false;
         this.testsSuccessful = false;
         this.errorMessage = null;
+        this.buildLog = "";
     }
 
     /**
@@ -111,6 +113,37 @@ public class CIResultObject {
      */
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    /**
+     * Getter to retrieve the build log.
+     * 
+     * @return the full build log output as a string.
+     */
+    public String getBuildLog() {
+        return buildLog;
+    }
+
+    /**
+     * Setter to update the build log.
+     * 
+     * @param buildLog the full output from the build and test processes.
+     */
+    public void setBuildLog(String buildLog) {
+        this.buildLog = buildLog;
+    }
+
+    /**
+     * Appends additional output to the existing build log.
+     * 
+     * @param log the additional log output to append.
+     */
+    public void appendBuildLog(String log) {
+        if (this.buildLog == null || this.buildLog.isEmpty()) {
+            this.buildLog = log;
+        } else {
+            this.buildLog += "\n" + log;
+        }
     }
 
 }
