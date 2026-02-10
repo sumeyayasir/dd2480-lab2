@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html","k":"18"},{"p":"dd2480.ciserver","l":"App"},{"p":"dd2480.ciserver","l":"BuildProcessor"},{"p":"dd2480.ciserver.model","l":"CIResultObject"},{"p":"dd2480.ciserver","l":"GitHubStatusNotifier"},{"p":"dd2480.ciserver","l":"Server"},{"p":"dd2480.ciserver","l":"WebhookPayload"}];updateSearchResults();
