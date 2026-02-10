@@ -78,11 +78,24 @@ public class Server {
         // 2. Start the build in a background thread
         BuildProcessor buildProcessor = new BuildProcessor();
         new Thread(() -> {
-            var result = buildProcessor.runBuild(
-                    payload.getCloneUrl(), payload.getBranch(), payload.getCommitSHA());
-            System.out.println("Build finished — success: " + result.isBuildSuccessful());
-            if (result.getErrorMessage() != null) {
-                System.err.println("Error: " + result.getErrorMessage());
+            // Set pending status before build starts
+            try {
+                GitHubStatusNotifier notifier = new GitHubStatusNotifier();
+                notifier.notifyPending(payload.getRepoFullName(), payload.getCommitSHA());
+
+                var result = buildProcessor.runBuild(
+                        payload.getCloneUrl(), payload.getBranch(), payload.getCommitSHA());
+                System.out.println("Build finished — success: " + result.isCIResultSuccessful());
+
+                // Notify GitHub with final status
+                notifier.notify(payload.getRepoFullName(), result);
+
+                if (result.getErrorMessage() != null) {
+                    System.err.println("Error: " + result.getErrorMessage());
+                }
+            } catch (Exception e) {
+                System.err.println("CI pipeline error: " + e.getMessage());
+                e.printStackTrace();
             }
         }).start();
 
