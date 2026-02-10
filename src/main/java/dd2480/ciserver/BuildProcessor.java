@@ -15,6 +15,10 @@ import java.util.stream.Collectors;
  */
 public class BuildProcessor {
 
+    /** Constructs a new BuildProcessor instance. */
+    public BuildProcessor() {
+    }
+
     /**
      * Clones the repository at the given URL and branch into a temporary
      * directory, then runs {@code mvn compile} to check compilation.
