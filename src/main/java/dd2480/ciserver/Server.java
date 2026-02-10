@@ -82,20 +82,37 @@ public class Server {
         // 2. Start the build in a background thread
         BuildProcessor buildProcessor = new BuildProcessor();
         new Thread(() -> {
-            // Set pending status before build starts
+            // Attempt to create notifier (non-fatal if GITHUB_TOKEN is missing)
+            GitHubStatusNotifier notifier = null;
             try {
-                GitHubStatusNotifier notifier = new GitHubStatusNotifier();
+                notifier = new GitHubStatusNotifier();
                 notifier.notifyPending(payload.getRepoFullName(), payload.getCommitSHA());
+            } catch (Exception e) {
+                System.err.println("Warning: GitHub notification unavailable — " + e.getMessage());
+            }
 
+            try {
                 var result = buildProcessor.runBuild(
                         payload.getCloneUrl(), payload.getBranch(), payload.getCommitSHA());
                 System.out.println("Build finished — success: " + result.isCIResultSuccessful());
 
-                // Notify GitHub with final status
-                notifier.notify(payload.getRepoFullName(), result);
+                if (result.getBuildLog() != null && !result.getBuildLog().isBlank()) {
+                    System.out.println("--- Build Log ---");
+                    System.out.println(result.getBuildLog());
+                    System.out.println("--- End Build Log ---");
+                }
 
                 if (result.getErrorMessage() != null) {
                     System.err.println("Error: " + result.getErrorMessage());
+                }
+
+                // Notify GitHub with final status
+                if (notifier != null) {
+                    try {
+                        notifier.notify(payload.getRepoFullName(), result);
+                    } catch (Exception e) {
+                        System.err.println("Warning: Failed to send final status — " + e.getMessage());
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("CI pipeline error: " + e.getMessage());
