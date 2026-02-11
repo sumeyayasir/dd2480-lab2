@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Unit tests for {@link GitHubStatusNotifier}.
  *
- * <p>Tests the mapping logic and description building without making
- * real HTTP requests to the GitHub API.</p>
+ * <p>
+ * Tests the mapping logic and description building without making
+ * real HTTP requests to the GitHub API.
+ * </p>
  */
 public class GitHubStatusNotifierTest {
 
@@ -115,5 +117,40 @@ public class GitHubStatusNotifierTest {
     public void testConstructorWithToken() {
         GitHubStatusNotifier notifier = new GitHubStatusNotifier("test-token");
         assertNotNull(notifier);
+    }
+
+    /**
+     * Verifies that getTokenFromEnv returns a non empty string, assuming the token
+     * is set in the environment.
+     */
+    @Test
+    public void testGetTokenFromEnvReturnsToken() {
+        String envToken = GitHubStatusNotifier.getTokenFromEnv();
+        assertNotNull(envToken);
+        assertFalse(envToken.isBlank());
+    }
+
+    /**
+     * Verifies that the notify method exists and returns correct type.
+     * 
+     * @throws NoSuchMethodException if the notify method is not found.
+     */
+    @Test
+    public void testNotifyMethodExists() throws NoSuchMethodException {
+        var notifyMethod = GitHubStatusNotifier.class.getMethod("notify", String.class, CIResultObject.class);
+        assertNotNull(notifyMethod);
+        assertEquals(int.class, notifyMethod.getReturnType());
+    }
+
+    /**
+     * Verifies that the notifyPending method exists and returns correct type.
+     * 
+     * @throws NoSuchMethodException if the notifyPending method is not found.
+     */
+    @Test
+    public void testNotifyPendingMethodExists() throws NoSuchMethodException {
+        var notifyPendingMethod = GitHubStatusNotifier.class.getMethod("notifyPending", int.class);
+        assertNotNull(notifyPendingMethod);
+        assertEquals(int.class, notifyPendingMethod.getReturnType());
     }
 }
