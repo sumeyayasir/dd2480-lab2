@@ -43,7 +43,7 @@ public class Server {
         System.out.println("Server started on port " + port);
     }
     /** SAVES the build result to a JSON-file. */
-    private static void saveBuildResult(dd2480.ciserver.model.CIResultObject result) {
+    public static void saveBuildResult(dd2480.ciserver.model.CIResultObject result) {
         try 
         {
             //1. Create a folder for build history if it doesn't exist
