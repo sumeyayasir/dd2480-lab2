@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import org.json.JSONObject;
+import java.nio.file.Files;
+
 
 /**
  * HTTP server that listens for GitHub webhook push events and triggers CI
@@ -30,11 +33,41 @@ public class Server {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         server.createContext("/webhook", Server::handleWebhook);
+        // Tell the server to listen to /builds 
 
         server.setExecutor(null);
         server.start();
 
         System.out.println("Server started on port " + port);
+    }
+    /** SAVES the build result to a JSON-file. */
+    private static void saveBuildResult(dd2480.ciserver.model.CIResultObject result) {
+        try {
+            //1. Create a folder for build history if it doesn't exist
+            java.io.File folder = new java.io.File("build_history");
+            if (!folder.exists()) 
+            {
+                folder.mkdir();// Create folder if id dose not exist
+
+            }
+            
+            //2. create a UNIQUE file name
+            String filePath="build_history/build_"+ result.getCommitSHA() + "_" + System.currentTimeMillis() + ".json";
+
+            //3. build the JSON.object
+            org.json.JSONObject json = new org.json.JSONObject();// Create a JSON object to hold the build result
+            json.put("commitSHA", result.getCommitSHA());
+            json.put("branch", result.getBranchName());
+            json.put("log", result.getBuildLog());
+            json.put("date", new java.util.Date().toString());// Gives date and time of the build
+
+            //4. Write to disk 
+            java.nio.file.Files.writeString(java.nio.file.Path.of(filePath), json.toString(4));
+            System.out.println("Build result saved to " + filePath);
+
+        } catch (java.io.IOException e) {
+            System.err.println("Failed to save build result: " + e.getMessage());
+        }
     }
 
     /**
@@ -58,9 +91,18 @@ public class Server {
      * @throws IOException if reading the request or writing the response fails.
      */
     private static void handleWebhook(HttpExchange exchange) throws IOException {
-        System.out.println("Received webhook request");
+        
+        //1.Check if it's a ping event and respond accordingly
+        String eventType = exchange.getRequestHeaders().getFirst("X-GitHub-Event"); 
+        if ("ping".equals(eventType)) {
+            System.out.println("Received ping from GitHub");
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+            return;
+        }
 
-        // 1. Read and parse the GitHub push event payload
+        // 2. If its not a ping, Parse the request body into a WebhookPayload object
+        System.out.println("Received webhook request");
         String body = readRequestBody(exchange);
         WebhookPayload payload;
         try {
@@ -79,7 +121,7 @@ public class Server {
                 + " | Commit: " + payload.getCommitSHA()
                 + " | Repo: " + payload.getCloneUrl());
 
-        // 2. Start the build in a background thread
+        // 3. Start the build in a background thread
         BuildProcessor buildProcessor = new BuildProcessor();
         new Thread(() -> {
             // Attempt to create notifier (non-fatal if GITHUB_TOKEN is missing)
@@ -94,6 +136,7 @@ public class Server {
             try {
                 var result = buildProcessor.runBuild(
                         payload.getCloneUrl(), payload.getBranch(), payload.getCommitSHA());
+                saveBuildResult(result);// Save the result
                 System.out.println("Build finished — success: " + result.isCIResultSuccessful());
 
                 if (result.getBuildLog() != null && !result.getBuildLog().isBlank()) {
