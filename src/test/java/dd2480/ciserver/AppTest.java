@@ -9,9 +9,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AppTest {
 
     /**
-     * Unit test to check that the main method simply exists in the App class. Since
-     * the purpose of the main is to invoke the server by calling listen, there is
-     * not much to test that is of value.
+     * Checks that the main method exists, and that it is public and static.
+     * 
+     * @throws NoSuchMethodException if the main method is not found.
      */
     @Test
     public void testMainExists() throws NoSuchMethodException {
