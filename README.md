@@ -27,6 +27,7 @@ The result is stored in a `CIResultObject` that tracks build success, test succe
 | `org.json:json` | 20240303 | Parse GitHub webhook JSON payloads |
 | `org.junit.jupiter:junit-jupiter-api` | 5.11.0 | Unit testing |
 | `org.junit.jupiter:junit-jupiter-params` | 5.11.0 | Parameterized test support |
+| `org.mockito:mockito-core` | 5.7.0 | Mocking in unit testing |
 
 ## Build and Run
 
