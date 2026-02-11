@@ -190,11 +190,23 @@ public class BuildProcessorTest {
      */
     @Test
     public void testCaptureOutputReadsProcessOutput() throws Exception {
-        ProcessBuilder pb = new ProcessBuilder("echo", "yo bro");
+
+        //change to run server on both mac and windows
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+        ProcessBuilder pb;
+        if (isWindows) {
+            // Windows requires "cmd /c" to run the echo command
+            pb = new ProcessBuilder("cmd.exe", "/c", "echo", "hello");
+        } else {
+            // Mac and Linux can run "echo" directly
+            pb = new ProcessBuilder("echo", "hello");
+        }
+
+
         Process process = pb.start();
         String output = BuildProcessor.captureOutput(process);
         process.waitFor();
 
-        assertEquals("yo bro", output.trim());
+        assertEquals("hello", output.trim());
     }
 }
