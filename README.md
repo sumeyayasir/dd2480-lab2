@@ -22,12 +22,12 @@ The result is stored in a `CIResultObject` that tracks build success, test succe
 
 ## Dependencies
 
-| Dependency | Version | Purpose |
-|-----------|---------|---------|
-| `org.json:json` | 20240303 | Parse GitHub webhook JSON payloads |
-| `org.junit.jupiter:junit-jupiter-api` | 5.11.0 | Unit testing |
-| `org.junit.jupiter:junit-jupiter-params` | 5.11.0 | Parameterized test support |
-| `org.mockito:mockito-core` | 5.7.0 | Mocking in unit testing |
+| Dependency                               | Version  | Purpose                            |
+| ---------------------------------------- | -------- | ---------------------------------- |
+| `org.json:json`                          | 20240303 | Parse GitHub webhook JSON payloads |
+| `org.junit.jupiter:junit-jupiter-api`    | 5.11.0   | Unit testing                       |
+| `org.junit.jupiter:junit-jupiter-params` | 5.11.0   | Parameterized test support         |
+| `org.mockito:mockito-core`               | 5.7.0    | Mocking in unit testing            |
 
 ## Build and Run
 
@@ -86,10 +86,23 @@ Then configure the ngrok URL as a GitHub webhook pointing to `/webhook`.
 ### P3 — Notification
 
 **Implementation:** `GitHubStatusNotifier` sends HTTP POST requests to the GitHub commit status API (`/repos/{owner}/{repo}/statuses/{sha}`). It sets:
+
 - **pending** before the build starts
 - **success** if both compilation and tests pass
 - **failure** if compilation or tests fail
 - **error** if an exception occurs
+
+### P7 — Build History
+
+**Implementation:** The server provides a persistent history of all build through a
+
+- **Persistence:** `Server.saveBuildResult()` saves each CI outcome as a JSON file in the `build_history/` directory, including commit SHA, branch, date, and full execution logs.
+- **Web Interface:** The `/builds` endpoint provides a dynamic HTML dashboard that lists past builds. Each entry links to a detailed view of the build's metadata and logs using query parameters.
+  web interface.
+  How to browse:
+  Navigate to http://localhost:8001/builds in a web broser while the server is running.
+
+**Unit tests:** BuildHistoryTest verifies that the build_history/ directory is automatically managed and that JSON serialization of build results is accurate and retrievable.
 
 The GitHub token is read from the `GITHUB_TOKEN` environment variable.
 
