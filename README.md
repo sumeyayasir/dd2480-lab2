@@ -107,15 +107,15 @@ However, we have not fully reached the "Formed" state. While individual responsi
 
 ## Statement of Contributions
 
-- **Sumeya Yasir Isse** (sumeyayasir): [TODO: fill in contributions].
+- **Sumeya Yasir Isse** (sumeyayasir): Implemented the build processor + unit tests. Implemented the persistence layer and web interface for build history + unit tests.
 
-- **Yiqin Lin** (Potoqin): [TODO: fill in contributions]
+- **Yiqin Lin** (Potoqin): Did not contribute.
 
-- **Emma Lindblom** (emmalindblm): [TODO: fill in contributions]
+- **Emma Lindblom** (emmalindblm): Implemented CI result object + unit tests. Implemented git hook for issue reference consistency. Coordinated group and kept track of grading criteria.
 
 - **Andy Li** (ydnall): Worked on webhook payload parsing, build pipeline integration, and commit status notification. Helped with documentation.
 
-- **Martin Zivojinovic** (ZivoMartin): [TODO: fill in contributions]
+- **Martin Zivojinovic** (ZivoMartin): Introduced the initial Maven project structure. Configured Java 21 and the main entry point in pom.xml. Implemented the minimal webhook server listening on /webhook. Established the foundation of the CI server. Enabled jar packaging and runtime execution.
 
 ## License
 
