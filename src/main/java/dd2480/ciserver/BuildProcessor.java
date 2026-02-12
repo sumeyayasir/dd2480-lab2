@@ -80,17 +80,24 @@ public class BuildProcessor {
             if (testExit == 0) {
                 result.setTestsSuccessful(true);
                 System.out.println("Tests passed!");
+                // [P8] Notify Discord of success
+                DiscordNotifier.notify("SUCCESS", branch, "Build and Tests passed successfully!");
             } else {
                 result.setTestsSuccessful(false);
                 result.setErrorMessage("Tests failed:\n" + testOutput);
                 System.out.println("Tests failed with exit code: " + testExit);
+                // [P8] Notify Discord of test failure
+                DiscordNotifier.notify("FAILURE", branch, "Tests failed. Check logs for details.");
             }
 
         } catch (Exception e) {
             result.setBuildSuccessful(false);
             result.setErrorMessage("Build exception: " + e.getMessage());
             e.printStackTrace();
+            // [P8] Notify Discord of exception
+            DiscordNotifier.notify("ERROR", branch, "CI Server Exception: " + e.getMessage());
         }
+
 
         return result;
     }
