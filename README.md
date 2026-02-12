@@ -1,6 +1,6 @@
 # DD2480: Assignment 2 — Continuous Integration Server
 
-TEST AGAIN
+TEST AGAIN AND AGAIN
 
 A small CI server that listens for GitHub push webhooks, clones the pushed branch, compiles the project, runs its tests, and reports the result back as a GitHub commit status. Built in collaboration with fellow course members.
 
