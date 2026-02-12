@@ -22,12 +22,12 @@ The result is stored in a `CIResultObject` that tracks build success, test succe
 
 ## Dependencies
 
-| Dependency | Version | Purpose |
-|-----------|---------|---------|
-| `org.json:json` | 20240303 | Parse GitHub webhook JSON payloads |
-| `org.junit.jupiter:junit-jupiter-api` | 5.11.0 | Unit testing |
-| `org.junit.jupiter:junit-jupiter-params` | 5.11.0 | Parameterized test support |
-| `org.mockito:mockito-core` | 5.7.0 | Mocking in unit testing |
+| Dependency                               | Version  | Purpose                            |
+| ---------------------------------------- | -------- | ---------------------------------- |
+| `org.json:json`                          | 20240303 | Parse GitHub webhook JSON payloads |
+| `org.junit.jupiter:junit-jupiter-api`    | 5.11.0   | Unit testing                       |
+| `org.junit.jupiter:junit-jupiter-params` | 5.11.0   | Parameterized test support         |
+| `org.mockito:mockito-core`               | 5.7.0    | Mocking in unit testing            |
 
 ## Build and Run
 
@@ -86,20 +86,37 @@ Then configure the ngrok URL as a GitHub webhook pointing to `/webhook`.
 ### P3 — Notification
 
 **Implementation:** `GitHubStatusNotifier` sends HTTP POST requests to the GitHub commit status API (`/repos/{owner}/{repo}/statuses/{sha}`). It sets:
+
 - **pending** before the build starts
 - **success** if both compilation and tests pass
 - **failure** if compilation or tests fail
 - **error** if an exception occurs
 
+### P7 — Build History
+
+**Implementation:** The server provides a persistent history of all build through a
+
+- **Persistence:** `Server.saveBuildResult()` saves each CI outcome as a JSON file in the `build_history/` directory, including commit SHA, branch, date, and full execution logs.
+- **Web Interface:** The `/builds` endpoint provides a dynamic HTML dashboard that lists past builds. Each entry links to a detailed view of the build's metadata and logs using query parameters.
+  web interface.
+  How to browse:
+  Navigate to http://localhost:8001/builds in a web broser while the server is running.
+
+**Unit tests:** BuildHistoryTest verifies that the build_history/ directory is automatically managed and that JSON serialization of build results is accurate and retrievable.
+
 The GitHub token is read from the `GITHUB_TOKEN` environment variable.
 
 **Unit tests:** `GitHubStatusNotifierTest` tests `mapResultToState()` and `buildDescription()` for all result combinations (success, build failure, test failure, exception) without making real HTTP calls.
+
+### P8 — Discord Notification
+The DiscordNotifier class is able to send real-time build status updates to a configured Discord server using webhook integrations
+So when a build is complete (success or failure), the server constructs a JSON payload containing the build status, branch name, and message. It looks for the Discord Webhook URL and sends the payload via an HTTP request to it correspondingly.
 
 ## API Documentation
 
 Generated Javadoc is available in [`docs/javadoc/`](docs/javadoc/index.html). All public classes and methods are documented.
 
-## SEMAT Team Assessment
+## P6 SEMAT Team Assessment
 
 We consider our team to be in the **"Seeded"** state. The team mission has been defined — build a CI server that handles compilation, testing, and notification — and individual responsibilities have been assigned. Constraints on the team's operation are known (deadline, tooling, port convention), the composition is defined (5 members), and governance rules are in place (feature branches, PRs with review, commit conventions).
 
@@ -109,7 +126,7 @@ However, we have not fully reached the "Formed" state. While individual responsi
 
 - **Sumeya Yasir Isse** (sumeyayasir): Implemented the build processor + unit tests. Implemented the persistence layer and web interface for build history + unit tests.
 
-- **Yiqin Lin** (Potoqin): Did not contribute.
+- **Yiqin Lin** (Potoqin): Implemented Discord notifications(P8). Ensured cross-platform compatibility of server in test(Windows/Mac).
 
 - **Emma Lindblom** (emmalindblm): Implemented CI result object + unit tests. Implemented git hook for issue reference consistency. Coordinated group and kept track of grading criteria.
 
