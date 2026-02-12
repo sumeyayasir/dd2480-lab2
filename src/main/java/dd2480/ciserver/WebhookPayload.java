@@ -38,7 +38,7 @@ public class WebhookPayload {
 
         if (!json.has("ref") || !json.has("after")) 
         {
-        throw new IllegalArgumentException(
+        throw new org.json.JSONException(
             "Invalid push event payload - missing required fields"
         );
         }
