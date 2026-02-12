@@ -36,11 +36,18 @@ public class WebhookPayload {
     public WebhookPayload(String jsonBody) {
         JSONObject json = new JSONObject(jsonBody);
 
+        if (!json.has("ref") || !json.has("after")) 
+        {
+        throw new IllegalArgumentException(
+            "Invalid push event payload - missing required fields"
+        );
+        }
         JSONObject repo = json.getJSONObject("repository");
         this.cloneUrl = repo.getString("clone_url");
         this.repoFullName = repo.getString("full_name");
         this.branch = parseBranchFromRef(json.getString("ref"));
         this.commitSHA = json.getString("after");
+        
     }
 
     /**
