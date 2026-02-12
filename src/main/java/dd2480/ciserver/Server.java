@@ -77,7 +77,7 @@ public class Server {
     /** Handles requests to /builds endpoint, 
      * lists all saved build results in the build_history folder and returns them as a JSON array.
      */
-    private static void handleHistory(HttpExchange exchange) throws IOException
+    public static void handleHistory(HttpExchange exchange) throws IOException
     {
         //1. Path to the build history folder
         java.io.File folder = new java.io.File("build_history");
@@ -231,7 +231,7 @@ public class Server {
                     System.err.println("Error: " + result.getErrorMessage());
                 }
 
-                // Notify GitHub with final status
+                // Noti
                 if (notifier != null) {
                     try {
                         notifier.notify(payload.getRepoFullName(), result);
