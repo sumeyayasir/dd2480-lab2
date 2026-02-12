@@ -108,11 +108,15 @@ The GitHub token is read from the `GITHUB_TOKEN` environment variable.
 
 **Unit tests:** `GitHubStatusNotifierTest` tests `mapResultToState()` and `buildDescription()` for all result combinations (success, build failure, test failure, exception) without making real HTTP calls.
 
+### P8 — Discord Notification
+The DiscordNotifier class is able to send real-time build status updates to a configured Discord server using webhook integrations
+So when a build is complete (success or failure), the server constructs a JSON payload containing the build status, branch name, and message. It looks for the Discord Webhook URL and sends the payload via an HTTP request to it correspondingly.
+
 ## API Documentation
 
 Generated Javadoc is available in [`docs/javadoc/`](docs/javadoc/index.html). All public classes and methods are documented.
 
-## SEMAT Team Assessment
+## P6 SEMAT Team Assessment
 
 We consider our team to be in the **"Seeded"** state. The team mission has been defined — build a CI server that handles compilation, testing, and notification — and individual responsibilities have been assigned. Constraints on the team's operation are known (deadline, tooling, port convention), the composition is defined (5 members), and governance rules are in place (feature branches, PRs with review, commit conventions).
 
@@ -122,7 +126,7 @@ However, we have not fully reached the "Formed" state. While individual responsi
 
 - **Sumeya Yasir Isse** (sumeyayasir): Implemented the build processor + unit tests. Implemented the persistence layer and web interface for build history + unit tests.
 
-- **Yiqin Lin** (Potoqin): Did not contribute.
+- **Yiqin Lin** (Potoqin): Implemented Discord notifications(P8). Ensured cross-platform compatibility of server in test(Windows/Mac).
 
 - **Emma Lindblom** (emmalindblm): Implemented CI result object + unit tests. Implemented git hook for issue reference consistency. Coordinated group and kept track of grading criteria.
 
