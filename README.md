@@ -1,7 +1,5 @@
 # DD2480: Assignment 2 — Continuous Integration Server
 
-TEST AGAIN AND AGAIN AND AGAIN
-
 A small CI server that listens for GitHub push webhooks, clones the pushed branch, compiles the project, runs its tests, and reports the result back as a GitHub commit status. Built in collaboration with fellow course members.
 
 ## Architecture
@@ -93,6 +91,11 @@ Then configure the ngrok URL as a GitHub webhook pointing to `/webhook`.
 - **success** if both compilation and tests pass
 - **failure** if compilation or tests fail
 - **error** if an exception occurs
+
+Screenshots of working github notification with checkmarks for the user to see the status of the commit.
+<img width="1384" height="489" alt="Skärmavbild 2026-02-12 kl  11 35 56" src="https://github.com/user-attachments/assets/04da2b49-4906-44b8-b3a0-cf645424ea28" />
+<img width="1312" height="831" alt="Skärmavbild 2026-02-12 kl  11 34 20" src="https://github.com/user-attachments/assets/54f71495-1d8a-4c4f-8ac7-6626b2dc98ef" />
+
 
 ### P7 — Build History
 
